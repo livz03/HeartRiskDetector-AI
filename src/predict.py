@@ -1,4 +1,4 @@
-import joblib
+`lambda import joblib
 import pandas as pd
 
 def load_pipeline(model_path: str):

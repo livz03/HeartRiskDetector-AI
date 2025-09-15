@@ -1,34 +1,33 @@
-# preprocessor.py
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-def load_and_preprocess_data(filepath: str):
+def preprocess_data(df: pd.DataFrame, target_column: str):
+    """Preprocess dataset : split into train/test and scale features.
+    Args:
+        df (pd.DataFrame): Input dataset.
+        target_column (str): Name of the target column.
+    Returns:
+         X_train, X_test, y_train, y_test, scaler
     """
-    Load dataset, preprocess it, and return X_train, X_test, y_train, y_test
-    Target column is set to 'heartdisease'
-    """
+    try:
+        # Handle missing values
+        df = df.dropna()  # or use imputer to fill missing values
 
-    # Load dataset
-    data = pd.read_csv(filepath)
+        # Split features and target
+        X = df.drop(columns=[target_column])
+        y = df[target_column]
 
-    # Make sure target column exists
-    if 'heartdisease' not in data.columns:
-        raise ValueError("❌ Target column 'heartdisease' not found in dataset. "
-                         "Check your CSV headers.")
+        # Split into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Features and target
-    X = data.drop('heartdisease', axis=1)
-    y = data['heartdisease']
+        # Scale features
+        scaler = StandardScaler()
+        X_train = scaler.fit_transform(X_train)
+        X_test = scaler.transform(X_test)
 
-    # Split dataset (80% train, 20% test)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
-
-    # Standardize features
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
-
-    return X_train, X_test, y_train, y_test
+        print("Data preprocessing completed successfully.")
+        return X_train, X_test, y_train, y_test, scaler
+    except Exception as e:
+        print(f"Error in data preprocessing: {e}")
+        return None, None, None, None, None

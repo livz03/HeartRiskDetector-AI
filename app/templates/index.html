@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Heart Risk Detector</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 80%;
+      margin: auto;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .chat-box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 200px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+    .chat-input {
+      width: 100%;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Heart Risk Detector</h1>
+
+    <!-- Input Form -->
+    <div class="card">
+      <h2>Enter Health Data</h2>
+      <form method="POST">
+        <textarea name="features" rows="5" cols="60" placeholder="Enter 13 comma-separated values"></textarea>
+        <br><br>
+        <button type="submit">Predict Risk</button>
+      </form>
+    </div>
+
+    <!-- Prediction Result -->
+    {% if result %}
+    <div class="card">
+      <h2>Prediction Result</h2>
+      <p><strong>Risk Level:</strong> {{ result }}</p>
+      <p><strong>Probability:</strong> {{ probability }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Risk Graph -->
+    {% if result %}
+    <div class="card">
+      <h2>Risk Probability Chart</h2>
+      <canvas id="riskChart"></canvas>
+      <script>
+        const ctx = document.getElementById('riskChart').getContext('2d');
+        const riskChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['No Risk', 'Risk'],
+            datasets: [{
+              data: [{{ (1 - probability)|round(2) }}, {{ probability|round(2) }}],
+              backgroundColor: ['#4CAF50', '#F44336']
+            }]
+          }
+        });
+      </script>
+    </div>
+    {% endif %}
+
+    <!-- AI Assistant Chat -->
+    <div class="card">
+      <h2>AI Assistant</h2>
+      <div id="chatBox" class="chat-box"></div>
+      <input id="chatInput" class="chat-input" placeholder="Ask me about your health risk..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value;
+      const chatBox = document.getElementById('chatBox');
+      
+      if (message.trim() !== "") {
+        chatBox.innerHTML += `<p><b>You:</b> ${message}</p>`;
+        
+        // Mock AI Response
+        setTimeout(() => {
+          chatBox.innerHTML += `<p><b>AI:</b> Based on your input, I recommend a healthy lifestyle with regular exercise and balanced diet.</p>`;
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }, 1000);
+      }
+      input.value = "";
+    }
+  </script>
+</body>
+</html>
