@@ -1,42 +1,34 @@
-# src/predict.py
-import os 
-from pathlib import Path
+# src/predict2.py
 import joblib
 import numpy as np
+from pathlib import Path
 
-
-ROOT = Path(__file__).resolve().parent.parent
-MODEL_PATH = ROOT / "models" / "mitbih_1_rf.pkl"
-SCALER_PATH = ROOT / "models" / "mitbih_1_scaler.pkl"
+ROOT = Path(__file__).resolve().parent
 
 def _load():
-    if not MODEL_PATH.exists() or not SCALER_PATH.exists():
-        raise FileNotFoundError("Model or scaler not found. Run src/train.py first.")
-    model = joblib.load(MODEL_PATH)
-    scaler = joblib.load(SCALER_PATH)
+    model = joblib.load(ROOT.parent / "models" / "model_1_rf.pkl")
+    scaler = joblib.load(ROOT.parent / "models" / "mode_1_scaler.pkl")
     return model, scaler
 
-def predict_row(features):
+def predict_row(row):
     """
-    features: list/array length 187
-    returns: dict { 'class': int, 'label': str, 'probs': [..], 'confidence': float }
+    row: list of features (length 187)
+    returns: dict with class, label, confidence, probs
     """
     model, scaler = _load()
-    arr = np.array(features, dtype=float).reshape(1, -1)
-    if hasattr(scaler, "n_features_in_"):
-        expected = scaler.n_features_in_
-        if arr.shape[1] != expected:
-            raise ValueError(f"Expected {expected} features, got {arr.shape[1]}")
-    arr_s = scaler.transform(arr)
-    probs = model.predict_proba(arr_s)[0]
-    cls = int(model.predict(arr_s)[0])
-
-    # mapping: class 0 => Low/Normal, others => Abnormal/High (adjust as needed)
-    label = "Low/Normal" if cls == 0 else "Abnormal/High"
+    X = scaler.transform(np.array(row).reshape(1, -1))
+    pred_class = model.predict(X)[0]
+    probs = model.predict_proba(X)[0]
+    confidence = probs.max()
+    
+    # Mapping to labels and advice
+    label_map = {0: "Safe", 1: "Medium Risk", 2: "High Risk"}
+    advice_map = {0: "Stay safe", 1: "Monitor health", 2: "Visit hospital"}
+    
     return {
-        "class": cls,
-        "label": label,
-        "probs": probs.tolist(),
-        "confidence": float(max(probs))
+        "class": int(pred_class),
+        "label": label_map[int(pred_class)],
+        "advice": advice_map[int(pred_class)],
+        "confidence": float(confidence),
+        "probs": probs.tolist()
     }
-
