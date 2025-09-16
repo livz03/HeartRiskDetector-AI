@@ -34,4 +34,4 @@ model.fit(X_train, y_train)
 joblib.dump(model, "models/model_1_rf.pkl")
 joblib.dump(scaler, "models/model_1_scaler.pkl")
 
-print(" Model and scaler saved: models/model_1_rf.pkl & models/model_1_scaler.pkl")
+print(" Model and scaler saved: models/mitbih_1_rf.pkl & models/mitbih_1_scaler.pkl")
