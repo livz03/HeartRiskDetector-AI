@@ -31,7 +31,7 @@ model = RandomForestClassifier(n_estimators=200, random_state=42)
 model.fit(X_train, y_train)
 
 # Save model and scaler
-joblib.dump(model, "src/model_1_rf.pkl")
-joblib.dump(scaler, "src/model_1_scaler.pkl")
+joblib.dump(model, "models/model_1_rf.pkl")
+joblib.dump(scaler, "models/model_1_scaler.pkl")
 
-print("✅ Model and scaler saved: src/model_1_rf.pkl & src/model_1_scaler.pkl")
+print(" Model and scaler saved: models/model_1_rf.pkl & models/model_1_scaler.pkl")

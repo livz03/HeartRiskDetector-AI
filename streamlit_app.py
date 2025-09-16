@@ -47,13 +47,13 @@ if st.button("🔍 Predict Risk"):
     probability = model.predict_proba(input_scaled)[0][1]  # Probability of risk
     
     # Show result
-    st.subheader("📊 Prediction Result")
+    st.subheader("Prediction Result")
     if prediction == 1:
-        st.error(f"🚨 High Risk Detected (Probability: {probability:.2f})")
-        st.warning("⚕️ Advice: Please visit a hospital for a full checkup immediately.")
+        st.error(f" High Risk Detected (Probability: {probability:.2f})")
+        st.warning(" Advice: Please visit a hospital for a full checkup immediately.")
     else:
-        st.success(f"✅ Low Risk (Probability: {probability:.2f})")
-        st.info("🙂 Advice: Maintain healthy habits, regular exercise, and routine checkups.")
+        st.success(f" Low Risk (Probability: {probability:.2f})")
+        st.info(" Advice: Maintain healthy habits, regular exercise, and routine checkups.")
 
     # -----------------------------
     # Chart Visualization
