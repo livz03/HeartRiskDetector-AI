@@ -1,13 +1,12 @@
+# src/api2.py
 from flask import Flask, request, jsonify
-import joblib
-import traceback
-import numpy as np
 from pathlib import Path
+import sys
 
-# Load model + scaler
-ROOT = Path(__file__).resolve().parent.parent
-model = joblib.load(ROOT / "models" / "mitbih_1_rf.pkl")
-scaler = joblib.load(ROOT / "models" / "mitbih_1_scaler.pkl")
+# add src to path to import predict2
+sys.path.append(str(Path(__file__).resolve().parent))
+
+from predict2 import predict_row
 
 app = Flask(__name__)
 
@@ -16,31 +15,22 @@ def health():
     return jsonify({"status": "ok"})
 
 @app.route("/predict", methods=["POST"])
-def predict():
+def predict_api():
+    """
+    Expect JSON: { "features": [f1, f2, ..., f187] }
+    Returns { "class": int, "label": str, "confidence": float, "probs": [...] }
+    """
+    data = request.get_json(force=True)
+    if not data or "features" not in data:
+        return jsonify({"error": "send JSON with key 'features' (list of numbers)"}), 400
+
+    features = data["features"]
     try:
-        data = request.get_json(force=True)
-        features = data.get("features", None)
-
-        if features is None:
-            return jsonify({"error": "Missing 'features' list"}), 400
-
-        # Ensure numpy float array, reshape, scale
-        features = np.array(features, dtype=float).reshape(1, -1)
-        features_scaled = scaler.transform(features)
-
-        pred = int(model.predict(features_scaled)[0])
-        probs = model.predict_proba(features_scaled)[0].tolist()
-
-        out = {
-            "class": pred,
-            "label": f"Class {pred}",
-            "confidence": max(probs),
-            "probs": probs
-        }
+        out = predict_row(features)
         return jsonify(out)
-
     except Exception as e:
-        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+        return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    # for local testing
+    app.run(host="0.0.0.0", port=5000, debug=True)
