@@ -1,34 +1,37 @@
-# src/train.py
-from pathlib import Path
-import joblib
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
-from preprocessor2 import load_mitbih, split_features_labels, train_test_scale
+import joblib
 
-def main():
-    print("Loading dataset...")
-    df = load_mitbih(header=None)
-    X, y = split_features_labels(df)
-    print("Shapes:", X.shape, y.shape)
+# -----------------------------
+# Load dataset (replace path if needed)
+# -----------------------------
+df = pd.read_csv("datasets/heart.csv")
 
-    print("Train/test split and scaling...")
-    X_train, X_test, y_train, y_test, scaler = train_test_scale(X, y, test_size=0.2)
+# Example dataset should include columns like:
+# Age, Sex, Cholesterol, RestingBP, ECG, HeartRate, target
 
-    print("Training RandomForest...")
-    model = RandomForestClassifier(n_estimators=300, random_state=42, n_jobs=-1)
-    model.fit(X_train, y_train)
+# Encode categorical values
+df["Sex"] = df["Sex"].map({"Male": 1, "Female": 0})
 
-    print("Validating on hold-out set...")
-    y_pred = model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
-    print(f"Validation accuracy: {acc:.4f}")
-    print(classification_report(y_test, y_pred, digits=4))
+# Features and target
+X = df.drop("target", axis=1)
+y = df["target"]
 
-    out_dir = Path(__file__).resolve().parent.parent / "models"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    joblib.dump(model, out_dir / "mitbih_1_rf.pkl")
-    joblib.dump(scaler, out_dir / "mitbih_1-scaler.pkl")
-    print(f"Saved model and scaler to {out_dir}")
+# Scale features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
 
-if __name__ == "__main__":
-    main()
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Train model
+model = RandomForestClassifier(n_estimators=200, random_state=42)
+model.fit(X_train, y_train)
+
+# Save model and scaler
+joblib.dump(model, "src/model_1_rf.pkl")
+joblib.dump(scaler, "src/model_1_scaler.pkl")
+
+print("✅ Model and scaler saved: src/model_1_rf.pkl & src/model_1_scaler.pkl")
